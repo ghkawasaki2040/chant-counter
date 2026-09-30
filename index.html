@@ -15,7 +15,7 @@
 <style>
 :root{
   box-sizing:border-box;
-  --c-blue:#1F6FC5; --c-yellow:#D4A21A; --c-red:#C62828;
+  --c-blue:#1F6FC5; --goal:#1F6FC5; --c-yellow:#D4A21A; --c-red:#C62828;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
   --paper:#EEF1F4; --sheet:#FFFFFF; --ink:#1D2A3A; --sub:#5F6B7A; --rule:#D5DBE2;
@@ -25,7 +25,7 @@
 @media (prefers-color-scheme:dark){:root{
   --paper:#141A22; --sheet:#1C242F; --ink:#E6EBF1; --sub:#9AA6B4; --rule:#2C3643;
   --fill:#5DB7BF; --fill-soft:#1E3A3E; --pace:#E0B45C; --sat:#86A9E6; --sun:#EB8C8C; --empty:#2A323D;
-  --bg-low:#2E333A; --bg-b:#1E3A5F; --bg-y:#4A3E14; --bg-r:#5A2222;}}
+  --bg-low:#2E333A; --bg-b:#1E3A5F; --bg-y:#4A3E14; --bg-r:#5A2222; --goal:#7FB2F0;}}
 *,*::before,*::after{box-sizing:inherit}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--paper);color:var(--ink);
@@ -49,7 +49,11 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-wei
 .plan label{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--sub);white-space:nowrap}
 .plan select{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:4px 0;width:100%;text-align:center;text-align-last:center;-webkit-appearance:none;appearance:none}
 /* 達成度グラフ */
-.gauge-head{display:flex;justify-content:space-between;align-items:baseline}
+.gauge-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 14px}
+.gauge-head b small{font-size:14px;font-weight:600}
+.gauge-head b span{font-size:inherit;color:inherit}
+.gauge-head em{font-style:normal;font-size:14px;font-weight:600;color:var(--goal)}
+.gauge-head #pct{margin-left:auto}
 .gauge-head b{font-size:22px;font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-weight:600}
 .gauge-head span{font-size:13px;color:var(--sub)}
 .track{position:relative;display:flex;gap:3px;height:22px;margin:6px 0 3px;padding:2px;border:2px dashed var(--rule);border-radius:6px}
@@ -110,7 +114,7 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
   </section>
 
   <section class="panel" aria-label="達成度">
-    <div class="gauge-head num"><b id="totalMan">0</b><span id="pct">0%</span></div>
+    <div class="gauge-head num"><b><small>現在：</small><span id="totalMan">0</span></b><em id="todayGoal"></em><span id="pct">0%</span></div>
     <div class="track" id="track">
       <div class="seg s1" style="flex:30"><i></i></div><div class="seg s2" style="flex:30"><i></i></div>
       <div class="seg s3" style="flex:30"><i></i></div><div class="seg s4" style="flex:10"><i></i><b>★</b></div>
@@ -268,6 +272,9 @@ function refresh(){
     seg.querySelector("i").style.width = (w*100) + "%";
     seg.classList.toggle("done", w >= 1);
   });
+  const td = [todayISO, wdMon(new Date()), holidayName(todayISO)];
+  const th = state.plan[planKey(td)];
+  document.getElementById("todayGoal").textContent = "今日の目標→" + String(th).replace(/\.0$/,"") + "h " + fmt(th * CFG.perHour);
   document.getElementById("dailyPace").textContent = "1日の目標 " + fmt(Math.round(daily));
   document.getElementById("paceMark").style.left = Math.min(100, planToDate/target*100) + "%";
   document.getElementById("scaleMax").textContent = state.targetMan + "万";
