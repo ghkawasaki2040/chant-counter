@@ -42,9 +42,10 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-wei
 .facts input[type=date]{font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:var(--paper);
   border:1px solid var(--rule);border-radius:6px;padding:1px 4px;min-height:30px;max-width:9.2em}
 .target{display:flex;align-items:baseline;gap:2px}
-.target input{width:4.2em;font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:transparent;
+.target input{width:3.4em;text-align:left !important;font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:transparent;
   border:0;border-bottom:1px dashed var(--rule);padding:0 2px;text-align:right}
-.plan{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid var(--rule)}
+.plan{display:grid;grid-template-columns:auto repeat(6,1fr);align-items:end;gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid var(--rule)}
+.plan .ph{font-size:11px;line-height:1.2;color:var(--sub);text-align:center;padding-bottom:6px}
 .plan label{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--sub);white-space:nowrap}
 .plan select{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:4px 0;width:100%;text-align:center;text-align-last:center;-webkit-appearance:none;appearance:none}
 /* 達成度グラフ */
@@ -64,7 +65,8 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-wei
 .pace{font-size:12px;color:var(--sub)}
 .pace::before{content:"";display:inline-block;width:2px;height:10px;background:var(--ink);opacity:.55;vertical-align:middle;margin-right:4px}
 /* 表 */
-table{width:100%;border-collapse:collapse;background:var(--sheet);border:1px solid var(--rule);border-radius:12px;overflow:hidden}
+.tablebox{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;overflow:clip}
+table{width:100%;border-collapse:collapse;background:var(--sheet)}
 thead th{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--sheet);font-size:12px;font-weight:500;color:var(--sub);
   text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)}
 thead th:first-child{text-align:left}
@@ -80,7 +82,9 @@ td select.empty{color:var(--sub)}
 .tot{color:var(--sub)}
 td.tot.low{background:var(--bg-low)} td.tot.ob{background:var(--bg-b);color:var(--ink)}
 td.tot.oy{background:var(--bg-y);color:var(--ink)} td.tot.or{background:var(--bg-r);color:var(--ink)}
-.legend{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11px;color:var(--sub);margin:6px 2px 0}
+.legend{display:flex;flex-wrap:wrap;gap:4px 8px;font-size:11px;color:var(--sub);padding:8px 10px;border-bottom:1px solid var(--rule)}
+#dailyPace{margin-left:0}
+#dailyPace::before{display:none}
 .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:3px;vertical-align:-1px;background:var(--sw)}
 select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--fill);outline-offset:2px}
 .bar{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;gap:8px;justify-content:center;
@@ -106,19 +110,21 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
   </section>
 
   <section class="panel" aria-label="達成度">
-    <div class="gauge-head num"><b id="totalMan">0万</b><span id="pct">0%</span></div>
+    <div class="gauge-head num"><b id="totalMan">0</b><span id="pct">0%</span></div>
     <div class="track" id="track">
       <div class="seg s1" style="flex:30"><i></i></div><div class="seg s2" style="flex:30"><i></i></div>
       <div class="seg s3" style="flex:30"><i></i></div><div class="seg s4" style="flex:10"><i></i><b>★</b></div>
       <u id="paceMark"></u></div>
     <div class="scale num"><span>0</span><span class="pace" id="paceText"></span><span id="scaleMax"></span></div>
-    <div class="legend num"><span style="--sw:var(--bg-low)">30%以上遅れ</span><span style="--sw:var(--bg-b)">10%超</span><span style="--sw:var(--bg-y)">20%超</span><span style="--sw:var(--bg-r)">30%超</span><span id="dailyPace"></span></div>
   </section>
 
+  <div class="tablebox">
+  <div class="legend num"><span style="--sw:var(--bg-low)">30%以上遅れ</span><span style="--sw:var(--bg-b)">10%超</span><span style="--sw:var(--bg-y)">20%超</span><span style="--sw:var(--bg-r)">30%超</span><span id="dailyPace"></span></div>
   <table class="num">
     <thead><tr><th>calender</th><th>time</th><th>count</th><th>total</th></tr></thead>
     <tbody id="rows"></tbody>
   </table>
+  </div>
   <p class="note">記録はこのスマホの中に保存されます。機種変更の前に「バックアップ」で保存してください。</p>
 </div>
 
@@ -207,7 +213,7 @@ const tgt = document.getElementById("target");
 tgt.value = state.targetMan;
 tgt.addEventListener("change", () => { const v = Number(tgt.value); if (v > 0){ state.targetMan = v; save(); refresh(); } else tgt.value = state.targetMan; });
 
-document.getElementById("plan").innerHTML = PLAN_ITEMS.map(([k,l]) =>
+document.getElementById("plan").innerHTML = '<span class="ph">目標<br>時間</span>' + PLAN_ITEMS.map(([k,l]) =>
   `<label>${l}<select data-plan="${k}" aria-label="${l}の予定時間">${CFG.hours.map(h=>`<option value="${h}">${hLabel(h)}</option>`).join("")}</select></label>`).join("");
 document.querySelectorAll("select[data-plan]").forEach(s => {
   s.value = String(state.plan[s.dataset.plan]);
@@ -254,7 +260,7 @@ function refresh(){
     } else tc.textContent = "";
   });
   const pct = total / target * 100;
-  document.getElementById("totalMan").textContent = (total/10000).toFixed(1).replace(/\.0$/,"") + "万（" + fmt(total) + "）";
+  document.getElementById("totalMan").textContent = fmt(total);
   document.getElementById("pct").textContent = pct.toFixed(1) + "%";
   [[0,30],[30,60],[60,90],[90,100]].forEach(([a,b], k) => {
     const seg = document.querySelectorAll("#track .seg")[k];
