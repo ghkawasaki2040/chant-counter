@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -29,14 +29,14 @@
 *,*::before,*::after{box-sizing:inherit}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--paper);color:var(--ink);
-  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+  font-family:system-ui,-apple-system,"Helvetica Neue","Hiragino Sans",sans-serif;
   font-size:15px;line-height:1.45}
 .num{font-variant-numeric:tabular-nums}
 .wrap{max-width:520px;margin:0 auto;padding:10px 12px 90px}
 h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-weight:600;
   font-size:20px;letter-spacing:.04em;margin:2px 2px 6px}
 .panel{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;padding:8px 12px;margin-bottom:8px}
-.facts{display:grid;grid-template-columns:1.3fr 1fr;gap:6px 10px;margin:0}
+.facts{display:grid;grid-template-columns:1.45fr 1fr;gap:6px 10px;margin:0}
 .facts div{display:flex;align-items:baseline;gap:6px;min-width:0}
 .facts .wide{grid-column:1/-1}
 .facts .lb{width:2.6em}
@@ -44,7 +44,7 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-wei
 .facts dd{margin:0;font-weight:600}
 .facts input[type=date]{font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:var(--paper);
   border:1px solid var(--rule);border-radius:6px;padding:1px 4px;min-height:30px;width:100%;min-width:0}
-.facts dd{flex:1;min-width:0;white-space:nowrap}
+.facts dd{flex:1;min-width:0}
 .gauge-head b small{font-family:system-ui,-apple-system,sans-serif;font-size:14px}
 .target{display:flex;align-items:baseline;gap:2px}
 .target input{width:6.2em;text-align:left !important;font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:transparent;
@@ -118,27 +118,27 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
 
   <section class="panel">
     <dl class="facts num">
-      <div><dt class="lb">start</dt><dd><input id="start" type="date" aria-label="開始日"></dd></div>
-      <div><dt>total days</dt><dd id="totalDays"></dd></div>
-      <div><dt class="lb">end</dt><dd><input id="end" type="date" aria-label="終了日"></dd></div>
-      <div><dt>countdown</dt><dd id="countdown"></dd></div>
-      <div class="wide"><dt>target</dt><dd class="target"><input id="target" type="text" inputmode="numeric" aria-label="目標回数"> chants</dd></div>
+      <div><dt class="lb">Start:</dt><dd><input id="start" type="date" aria-label="Start date"></dd></div>
+      <div><dt>Total days:</dt><dd id="totalDays"></dd></div>
+      <div><dt class="lb">End:</dt><dd><input id="end" type="date" aria-label="End date"></dd></div>
+      <div><dt>Countdown:</dt><dd id="countdown"></dd></div>
+      <div class="wide"><dt>Target:</dt><dd class="target"><input id="target" type="text" inputmode="numeric" aria-label="Target chants"> chants</dd></div>
     </dl>
-    <div class="plan-h">目標時間</div>
+    <div class="plan-h">Target time</div>
     <div class="plan" id="plan"></div>
   </section>
 
-  <section class="panel" aria-label="達成度">
-    <div class="gauge-head num"><b><small>現在：</small><span id="current">0</span></b><span id="pct">–</span></div>
-    <div class="gauge-sub num"><span>今日までの目標：<b id="progTarget">0</b></span><span>1日の目標：<b id="daily">0</b></span></div>
+  <section class="panel" aria-label="Progress">
+    <div class="gauge-head num"><b><small>Current: </small><span id="current">0</span></b><span id="pct">–</span></div>
+    <div class="gauge-sub num"><span>Progress target: <b id="progTarget">0</b></span><span>1 day target: <b id="daily">0</b></span></div>
     <div class="goal num" id="todayGoal"></div>
     <div class="bars">
-    <span class="bl">実際の進捗</span>
+    <span class="bl">Actual</span>
     <div class="track" id="track">
       <div class="seg s1" style="flex:30"><i></i></div><div class="seg s2" style="flex:30"><i></i></div>
       <div class="seg s3" style="flex:30"><i></i></div><div class="seg s4" style="flex:10"><i></i><b>★</b></div>
       </div>
-    <span class="bl">目標の進捗</span>
+    <span class="bl">Target</span>
     <div class="tbar"><div><i id="tfill"></i></div></div>
     <span></span>
     <div style="padding:0 4px"><div class="scale num"><span>0</span><span></span><span id="scaleMax"></span></div></div>
@@ -146,43 +146,35 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
   </section>
 
   <div class="tablebox">
-  <div class="legend num"><span style="--sw:var(--bg-low)">30%以上遅れ</span><span style="--sw:var(--bg-b)">10%超</span><span style="--sw:var(--bg-y)">20%超</span><span style="--sw:var(--bg-r)">30%超</span></div>
+  <div class="legend num"><span style="--sw:var(--bg-low)">30%+ behind</span><span style="--sw:var(--bg-b)">10%+ ahead</span><span style="--sw:var(--bg-y)">20%+ ahead</span><span style="--sw:var(--bg-r)">30%+ ahead</span></div>
   <table class="num">
-    <thead><tr><th>calendar</th><th>time</th><th>count</th><th>total</th></tr></thead>
+    <thead><tr><th>Calendar</th><th>time</th><th>count</th><th>total</th></tr></thead>
     <tbody id="rows"></tbody>
   </table>
   </div>
-  <p class="note">記録はこのスマホの中に保存されます。機種変更の前に「バックアップ」で保存してください。</p>
+  <p class="note">Records are saved only on this phone. Use "Backup" before changing phones.</p>
 </div>
 
 <div class="bar">
-  <button class="main" id="todayBtn">今日</button>
-  <button id="exportBtn">バックアップ</button>
-  <button id="importBtn">復元</button>
+  <button class="main" id="todayBtn">Today</button>
+  <button id="exportBtn">Backup</button>
+  <button id="importBtn">Restore</button>
   <input id="importFile" type="file" accept="application/json,.json" hidden>
 </div>
 
 <script>
-const CFG = {"start": "2026-09-29", "end": "2027-01-31", "target": 2000000, "perHour": 3400, "plan": {"mon": 5, "tue": 5, "wed": 5, "thu": 5, "fri": 10, "sat": 2, "sun": 2, "hol": 2}, "hours": [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0], "times": [{"m": 20, "label": "20m", "count": 1150}, {"m": 30, "label": "30m", "count": 1700}, {"m": 40, "label": "40m", "count": 2300}, {"m": 60, "label": "1h", "count": 3400}, {"m": 90, "label": "1.5h", "count": 5100}, {"m": 120, "label": "2h", "count": 6800}, {"m": 150, "label": "2.5h", "count": 8500}, {"m": 180, "label": "3h", "count": 10200}, {"m": 210, "label": "3.5h", "count": 11900}, {"m": 240, "label": "4h", "count": 13600}, {"m": 270, "label": "4.5h", "count": 15300}, {"m": 300, "label": "5h", "count": 17000}, {"m": 330, "label": "5.5h", "count": 18700}, {"m": 360, "label": "6h", "count": 20400}, {"m": 390, "label": "6.5h", "count": 22100}, {"m": 420, "label": "7h", "count": 23800}, {"m": 450, "label": "7.5h", "count": 25500}, {"m": 480, "label": "8h", "count": 27200}, {"m": 510, "label": "8.5h", "count": 28900}, {"m": 540, "label": "9h", "count": 30600}, {"m": 570, "label": "9.5h", "count": 32300}, {"m": 600, "label": "10h", "count": 34000}, {"m": 660, "label": "11h", "count": 37400}]};
-const KEY = "chant-counter-v1";
-const WD = ["月","火","水","木","金","土","日"];
-const PLAN_ITEMS = [["mon","月"],["tue","火"],["wed","水"],["thu","木"],["fri","金"],["sat","土"],["sun","日"],["hol","祝"]];
-const fmt = n => Math.round(n).toLocaleString("ja-JP");
+const CFG = {"start": "2026-09-29", "end": "2026-12-31", "target": 1000000, "perHour": 3400, "plan": {"mon": 5, "tue": 3, "wed": 5, "thu": 3, "fri": 7, "sat": 3, "sun": 2, "hol": 2}, "hours": [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0], "times": [{"m": 20, "label": "20m", "count": 1150}, {"m": 30, "label": "30m", "count": 1700}, {"m": 40, "label": "40m", "count": 2300}, {"m": 60, "label": "1h", "count": 3400}, {"m": 90, "label": "1.5h", "count": 5100}, {"m": 120, "label": "2h", "count": 6800}, {"m": 150, "label": "2.5h", "count": 8500}, {"m": 180, "label": "3h", "count": 10200}, {"m": 210, "label": "3.5h", "count": 11900}, {"m": 240, "label": "4h", "count": 13600}, {"m": 270, "label": "4.5h", "count": 15300}, {"m": 300, "label": "5h", "count": 17000}, {"m": 330, "label": "5.5h", "count": 18700}, {"m": 360, "label": "6h", "count": 20400}, {"m": 390, "label": "6.5h", "count": 22100}, {"m": 420, "label": "7h", "count": 23800}, {"m": 450, "label": "7.5h", "count": 25500}, {"m": 480, "label": "8h", "count": 27200}, {"m": 510, "label": "8.5h", "count": 28900}, {"m": 540, "label": "9h", "count": 30600}, {"m": 570, "label": "9.5h", "count": 32300}, {"m": 600, "label": "10h", "count": 34000}, {"m": 660, "label": "11h", "count": 37400}]};
+const KEY = "chant-counter-en-v1";
+const WD = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const PLAN_ITEMS = [["mon","Mon"],["tue","Tue"],["wed","Wed"],["thu","Thu"],["fri","Fri"],["sat","Sat"],["sun","Sun"],["hol","Hol"]];
+const fmt = n => Math.round(n).toLocaleString("en-US");
 const hTxt = h => String(h).replace(/\.0$/,"") + "h";
-const hLabel = h => h.toFixed(1);
 
 // ---- storage ----
 let state = { entries:{}, plan:{...CFG.plan}, target: CFG.target, start: CFG.start, end: CFG.end };
-// 旧版の保存データ（万単位の目標・土日祝まとめ・時間単位の記録）を自動で変換
-function upgrade(s){
-  if (s.unit !== "m") { const e = {}; Object.entries(s.entries||{}).forEach(([k,v]) => e[k] = Math.round(v*60)); s.entries = e; s.unit = "m"; }
-  if (!s.target && s.targetMan) s.target = s.targetMan * 10000;
-  delete s.targetMan;
-  if (s.plan && s.plan.weh != null) { s.plan.sat = s.plan.sun = s.plan.hol = s.plan.weh; delete s.plan.weh; }
-  return s;
-}
-try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) { upgrade(s); state = { ...state, ...s, plan:{...CFG.plan, ...(s.plan||{})} }; } } catch(e) {}
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){ alert("保存できませんでした。プライベートブラウズを解除してください。"); } }
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) state = { ...state, ...s, plan:{...CFG.plan, ...(s.plan||{})} }; } catch(e) {}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){ alert("Could not save. Please turn off Private Browsing."); } }
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
 const TIME = {}; CFG.times.forEach(t => TIME[t.m] = t);
 const countOf = m => TIME[m] ? TIME[m].count : Math.round(m/60*CFG.perHour);
@@ -233,8 +225,8 @@ function changePeriod(){
   const s = startIn.value, e = endIn.value;
   const reset = () => { startIn.value = state.start; endIn.value = state.end; };
   if (!s || !e) return reset();
-  if (s > e) { alert("start は end より前の日付にしてください。"); return reset(); }
-  if (dayDiff(s,e) > 730) { alert("期間は2年以内にしてください。"); return reset(); }
+  if (s > e) { alert("Start must be on or before End."); return reset(); }
+  if (dayDiff(s,e) > 730) { alert("Please keep the period within 2 years."); return reset(); }
   state.start = s; state.end = e; save(); buildRows(); refresh(); jumpToday();
 }
 startIn.addEventListener("change", changePeriod);
@@ -248,7 +240,7 @@ tgt.addEventListener("blur", showTarget);
 tgt.addEventListener("change", () => { const v = Number(tgt.value.replace(/[^0-9]/g,"")); if (v > 0){ state.target = v; save(); refresh(); } showTarget(); });
 
 document.getElementById("plan").innerHTML = PLAN_ITEMS.map(([k,l]) =>
-  `<label>${l}<select data-plan="${k}" aria-label="${l}の目標時間">${CFG.hours.map(h=>`<option value="${h}">${hLabel(h)}</option>`).join("")}</select></label>`).join("");
+  `<label>${l}<select data-plan="${k}" aria-label="${l} target time">${CFG.hours.map(h=>`<option value="${h}">${hTxt(h)}</option>`).join("")}</select></label>`).join("");
 document.querySelectorAll("select[data-plan]").forEach(s => {
   s.value = String(state.plan[s.dataset.plan]);
   s.addEventListener("change", () => { state.plan[s.dataset.plan] = Number(s.value); save(); refresh(); });
@@ -261,11 +253,11 @@ function buildRows(){
   let html = "", lastMonth = "";
   DAYS.forEach(([date, wd, hol]) => {
     const mk = date.slice(0,7);
-    if (mk !== lastMonth){ lastMonth = mk; html += `<tr class="month"><td colspan="4">${Number(mk.slice(0,4))}年${Number(mk.slice(5))}月</td></tr>`; }
+    if (mk !== lastMonth){ lastMonth = mk; html += `<tr class="month"><td colspan="4">${MONTHS[Number(mk.slice(5))-1]} ${mk.slice(0,4)}</td></tr>`; }
     const cls = hol ? "hol" : wd===5 ? "w5" : wd===6 ? "w6" : "";
     html += `<tr id="r${date}" class="${date===todayISO?"today":""}">
-      <td class="${cls}">${md(date)}<span class="dw">${WD[wd]}${hol?"祝":""}</span></td>
-      <td><select data-date="${date}" aria-label="${md(date)}の時間">${timeOpts}</select></td>
+      <td class="${cls}">${md(date)}<span class="dw">${WD[wd]}${hol?" Hol":""}</span></td>
+      <td><select data-date="${date}" aria-label="time on ${md(date)}">${timeOpts}</select></td>
       <td id="c${date}"></td><td class="tot" id="t${date}"></td></tr>`;
   });
   document.getElementById("rows").innerHTML = html;
@@ -294,7 +286,7 @@ function refresh(){
   const elapsed = Math.max(0, Math.min(totalDays, dayDiff(state.start, todayISO) + 1));
   const prog = daily * elapsed;
   document.getElementById("totalDays").textContent = totalDays;
-  document.getElementById("countdown").textContent = Math.max(0, dayDiff(todayISO, state.end)) + " day";
+  document.getElementById("countdown").textContent = Math.max(0, dayDiff(todayISO, state.end));
   document.getElementById("current").textContent = fmt(current);
   document.getElementById("progTarget").textContent = fmt(prog);
   document.getElementById("daily").textContent = fmt(daily);
@@ -302,7 +294,7 @@ function refresh(){
   const td = [todayISO, wdMon(new Date()), isHoliday(todayISO)];
   const th = state.plan[planKey(td)];
   document.getElementById("todayGoal").textContent =
-    "今日の目標→" + (td[2] ? "祝" : WD[td[1]]) + " " + hTxt(th) + " " + fmt(th * CFG.perHour);
+    "Today target: " + (td[2] ? "Hol" : WD[td[1]]) + " " + hTxt(th) + " " + fmt(th * CFG.perHour);
   const pct = current / state.target * 100;
   [[0,30],[30,60],[60,90],[90,100]].forEach(([a,b], k) => {
     const seg = document.querySelectorAll("#track .seg")[k];
@@ -347,16 +339,18 @@ fileIn.addEventListener("change", async () => {
   try {
     const s = JSON.parse(await f.text());
     if (!s || typeof s.entries !== "object") throw new Error();
-    if (!confirm("バックアップの内容で今の記録を置き換えます。よろしいですか？")) return;
-    upgrade(s);
+    if (!confirm("Replace the current records with this backup?")) return;
+    // Japanese-version backups are converted automatically
+    if (s.unit !== "m") { const e = {}; Object.entries(s.entries).forEach(([k,v]) => e[k] = Math.round(v*60)); s.entries = e; }
     const plan = {...CFG.plan, ...(s.plan||{})};
+    if (s.plan && s.plan.weh != null) { plan.sat = plan.sun = plan.hol = s.plan.weh; delete plan.weh; }
     state = { unit:"m", entries:s.entries, plan,
-              target: s.target || CFG.target,
+              target: s.target || (s.targetMan ? s.targetMan * 10000 : CFG.target),
               start: s.start || state.start, end: s.end || state.end };
     save(); showTarget(); startIn.value = state.start; endIn.value = state.end;
     document.querySelectorAll("select[data-plan]").forEach(x => x.value = String(state.plan[x.dataset.plan]));
-    buildRows(); refresh(); jumpToday(); alert("復元しました。");
-  } catch(e) { alert("このファイルは読み込めません。バックアップで保存した .json ファイルを選んでください。"); }
+    buildRows(); refresh(); jumpToday(); alert("Restored.");
+  } catch(e) { alert("This file cannot be read. Please choose a .json file saved with Backup."); }
   fileIn.value = "";
 });
 
