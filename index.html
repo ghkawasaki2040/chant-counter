@@ -146,6 +146,18 @@ td.tot.oy{background:var(--bg-y);color:var(--ink)} td.tot.or{background:var(--bg
 body.locked{overflow:hidden}
 .notice{max-width:520px;margin:10px auto 0;font-size:12px;color:var(--sub)}
 .notice summary{cursor:pointer;text-align:center;color:#E07A10;font-weight:600}
+.notice.bk{margin-top:4px}
+.notice.bk summary{color:var(--ink)}
+.snap{margin:8px 0 0;font-size:12px;color:var(--sub);text-align:center}
+.snap button{font:inherit;font-size:13px;margin-left:6px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:14px;padding:3px 10px}
+[hidden]{display:none !important}
+/* 使用期限が過ぎたときの画面 */
+.expired{position:fixed;inset:0;z-index:110;background:var(--paper);display:flex;align-items:center;justify-content:center;padding:24px}
+.expired .gbox{text-align:center}
+.expired p{font-size:15px;margin:0 0 8px}
+.expired small{display:block;font-size:12px;color:var(--sub);margin-bottom:14px}
+.expired button{font:inherit;font-size:16px;font-weight:700;color:#fff;background:#1D2A3A;border:0;border-radius:10px;padding:10px 24px}
+
 .notice ul{color:var(--sub);font-size:12px;margin-top:6px}
 select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--fill);outline-offset:2px}
 /* ボタン：iPhone で位置がずれないよう、画面に固定せず表のすぐ上に置く */
@@ -157,6 +169,7 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
 </style>
 </head>
 <body>
+<div id="expired" class="expired" hidden><div class="gbox"><p id="xMsg"></p><small id="xSub"></small><button id="xBtn" class="xb"></button></div></div>
 <div id="gate" class="gate" hidden><div class="gbox">
   <h2 id="gTitle"></h2><ul id="gList"></ul><p class="ghint" id="gHint"></p>
   <label class="glab"><span id="gLabel"></span><input id="gPass" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
@@ -174,8 +187,8 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
 
   <section class="panel">
     <dl class="facts num">
-      <div class="dcell"><dt>start</dt><dd><input id="start" type="date" min="2026-01-01" max="2035-12-31" aria-label="開始日"></dd></div>
-      <div class="dcell"><dt>end</dt><dd><input id="end" type="date" min="2026-01-01" max="2035-12-31" aria-label="終了日"></dd></div>
+      <div class="dcell"><dt>start</dt><dd><input id="start" type="date" min="2026-09-01" max="2027-11-30" aria-label="開始日"></dd></div>
+      <div class="dcell"><dt>end</dt><dd><input id="end" type="date" min="2026-09-01" max="2027-11-30" aria-label="終了日"></dd></div>
       <div><dt>total days</dt><dd id="totalDays"></dd></div>
       <div><dt>countdown</dt><dd id="countdown"></dd></div>
       <div class="wide"><dt>target</dt><dd class="target tsel"><select id="targetSel" aria-label="目標回数"></select> chants</dd></div>
@@ -221,12 +234,26 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
   </div>
   <p class="note">記録はこのスマホの中に保存されます。機種変更の前に「バックアップ」で保存してください。</p>
   <details class="notice"><summary id="nSum"></summary><ul id="nList"></ul></details>
+  <details class="notice bk"><summary id="bSum"></summary><ul id="bList"></ul><div class="snap" id="snapBox"></div></details>
 </div>
 
 
 <script>
-const CFG = {"start": "2026-10-01", "end": "2026-12-31", "target": 100000, "perHour": 3400, "plan": {"mon": 1, "tue": 1, "wed": 1, "thu": 1, "fri": 1, "sat": 1, "sun": 1, "hol": 1}, "hours": [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "targets": [100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1500000, 2000000, 3000000], "targetMax": 5000000, "dailyMax": 50000, "maxDays": 185, "maxPeriods": 120, "dateMin": "2026-01-01", "dateMax": "2035-12-31", "codes": [{"hash": "7a7fc9b3", "until": "2026-10-31"}], "times": [{"m": 20, "label": "20m", "count": 1150}, {"m": 30, "label": "30m", "count": 1700}, {"m": 40, "label": "40m", "count": 2300}, {"m": 60, "label": "1h", "count": 3400}, {"m": 90, "label": "1.5h", "count": 5100}, {"m": 120, "label": "2h", "count": 6800}, {"m": 150, "label": "2.5h", "count": 8500}, {"m": 180, "label": "3h", "count": 10200}, {"m": 210, "label": "3.5h", "count": 11900}, {"m": 240, "label": "4h", "count": 13600}, {"m": 270, "label": "4.5h", "count": 15300}, {"m": 300, "label": "5h", "count": 17000}, {"m": 330, "label": "5.5h", "count": 18700}, {"m": 360, "label": "6h", "count": 20400}, {"m": 390, "label": "6.5h", "count": 22100}, {"m": 420, "label": "7h", "count": 23800}, {"m": 450, "label": "7.5h", "count": 25500}, {"m": 480, "label": "8h", "count": 27200}, {"m": 510, "label": "8.5h", "count": 28900}, {"m": 540, "label": "9h", "count": 30600}, {"m": 570, "label": "9.5h", "count": 32300}, {"m": 600, "label": "10h", "count": 34000}, {"m": 660, "label": "11h", "count": 37400}, {"m": 720, "label": "12h", "count": 40800}]};
+const CFG = {"start": "2026-10-01", "end": "2026-12-31", "target": 100000, "perHour": 3400, "plan": {"mon": 1, "tue": 1, "wed": 1, "thu": 1, "fri": 1, "sat": 1, "sun": 1, "hol": 1}, "hours": [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "targets": [100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1500000, 2000000, 3000000], "targetMax": 5000000, "dailyMax": 50000, "maxDays": 185, "maxPeriods": 120, "dateMin": "2026-09-01", "dateMax": "2027-11-30", "useEnd": "2027-11-30", "codes": [{"hash": "7a7fc9b3", "until": "2026-10-31"}], "times": [{"m": 20, "label": "20m", "count": 1150}, {"m": 30, "label": "30m", "count": 1700}, {"m": 40, "label": "40m", "count": 2300}, {"m": 60, "label": "1h", "count": 3400}, {"m": 90, "label": "1.5h", "count": 5100}, {"m": 120, "label": "2h", "count": 6800}, {"m": 150, "label": "2.5h", "count": 8500}, {"m": 180, "label": "3h", "count": 10200}, {"m": 210, "label": "3.5h", "count": 11900}, {"m": 240, "label": "4h", "count": 13600}, {"m": 270, "label": "4.5h", "count": 15300}, {"m": 300, "label": "5h", "count": 17000}, {"m": 330, "label": "5.5h", "count": 18700}, {"m": 360, "label": "6h", "count": 20400}, {"m": 390, "label": "6.5h", "count": 22100}, {"m": 420, "label": "7h", "count": 23800}, {"m": 450, "label": "7.5h", "count": 25500}, {"m": 480, "label": "8h", "count": 27200}, {"m": 510, "label": "8.5h", "count": 28900}, {"m": 540, "label": "9h", "count": 30600}, {"m": 570, "label": "9.5h", "count": 32300}, {"m": 600, "label": "10h", "count": 34000}, {"m": 660, "label": "11h", "count": 37400}, {"m": 720, "label": "12h", "count": 40800}], "version": "25"};
 const KEY = "chant-counter-v1";
+
+// ---- 更新前の自動の控え：新しい版で初めて開いたとき、保存データを書き換える前に控えを残す ----
+(function(){
+  try {
+    const VKEY = KEY + "-ver", raw = localStorage.getItem(KEY), prev = localStorage.getItem(VKEY);
+    if (raw && prev !== CFG.version) {
+      const n = new Date(), p = x => String(x).padStart(2, "0");
+      const at = n.getFullYear() + "/" + p(n.getMonth()+1) + "/" + p(n.getDate()) + " " + p(n.getHours()) + ":" + p(n.getMinutes());
+      localStorage.setItem(KEY + "-snap", JSON.stringify({ at, data: raw }));
+    }
+    localStorage.setItem(VKEY, CFG.version);
+  } catch(e) {}
+})();
 const WD = ["月","火","水","木","金","土","日"];
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const PLAN_ITEMS = [["mon","月"],["tue","火"],["wed","水"],["thu","木"],["fri","金"],["sat","土"],["sun","日"],["hol","祝"]];
@@ -280,6 +307,7 @@ const wdMon = d => (d.getDay()+6)%7;
 const GATE = {
   title: "ご利用にあたって",
   items: [
+    "本アプリの利用期間は、プレ期間として 2026/9/1〜2027/11/30 です。期間を過ぎるとご利用いただけません。",
     "このアプリはご招待した方専用です。URLやパスワードの共有はご遠慮ください。",
     "本アプリは無料で提供しており、動作や計算結果の正確さを保証するものではありません。ご利用はご自身の判断と責任でお願いいたします。",
     "記録はお使いのスマホの中にのみ保存され、外部に送信されることはありません。作成者が記録を見ることはできません。",
@@ -292,6 +320,9 @@ const GATE = {
   hint: "先にSafariの共有ボタンから「ホーム画面に追加」をして、ホーム画面のアイコンから開いたアプリでパスワードを入力してください。",
   label: "パスワード", button: "同意して始める",
   wrong: "パスワードが正しくありません。", closed: "新規登録の受付は終了しました。",
+  expired: d => d + " でこのアプリの使用期限が過ぎました。",
+  expiredSub: "記録は下のボタンでバックアップとして保存できます。",
+  expiredBtn: "バックアップ",
 };
 
 // ---- 初回のパスワード入力（受付期限つき）----
@@ -302,6 +333,18 @@ const GATE = {
   $("gTitle").textContent = GATE.title; $("nSum").textContent = GATE.title;
   $("gList").innerHTML = li; $("nList").innerHTML = li;
   $("gHint").textContent = GATE.hint; $("gLabel").textContent = GATE.label; $("gBtn").textContent = GATE.button;
+
+  // 使用期限（プレ期間の終了日）を過ぎたら、使えない画面を表示（バックアップだけはできる）
+  {
+    const n = new Date(), t = n.getFullYear() + "-" + String(n.getMonth()+1).padStart(2,"0") + "-" + String(n.getDate()).padStart(2,"0");
+    if (t > CFG.useEnd) {
+      const x = $("expired"); x.hidden = false; document.body.classList.add("locked");
+      $("xMsg").textContent = GATE.expired(CFG.useEnd.replace(/-/g, "/"));
+      $("xSub").textContent = GATE.expiredSub; $("xBtn").textContent = GATE.expiredBtn;
+      $("xBtn").addEventListener("click", () => { const b = document.getElementById("exportBtn"); if (b) b.click(); });
+      return;
+    }
+  }
   const AKEY = KEY + "-auth";
   let ok = false;
   try {
@@ -329,6 +372,38 @@ const GATE = {
   };
   $("gBtn").addEventListener("click", tryPass);
   $("gPass").addEventListener("keydown", e => { if (e.key === "Enter") tryPass(); });
+})();
+const BK = {
+  title: "データのバックアップと復元について",
+  items: [
+    "記録はこのスマホの中にだけ保存されています。アプリの削除、Safariの履歴の消去、機種変更などで記録が失われることがあります。",
+    "「バックアップ」を押すと、その時点のすべての記録と設定をファイルに保存できます。ファイルアプリに保存したり、自分宛てにメールやLINEで送ったりしておいてください。",
+    "月末やアプリの更新の前など、区切りのときにバックアップを取っておくことをおすすめします。",
+    "「復元」をすると、今の記録と設定は、バックアップの内容に丸ごと置き換わります。バックアップを取った日より後に入力した記録は消えます。",
+    "復元する前に、今の状態もバックアップしておくと、元に戻せるので安心です。",
+    "機種変更のときは、古いスマホでバックアップを取り、新しいスマホで「復元」してください。",
+    "アプリが新しい版に更新される直前に、記録の控えを自動で残しています。更新後に記録がおかしくなったときは、下のボタンで更新前の状態に戻せます。",
+  ],
+  snap: "更新前の控え：", snapBtn: "この状態に戻す",
+  snapConfirm: "記録を更新前の状態に戻します。更新後に入力した記録は消えます。よろしいですか？",
+  snapNone: "更新前の控えはまだありません。",
+};
+
+// ---- データのバックアップと復元について（説明と、更新前の控えに戻すボタン）----
+(function(){
+  const $ = id => document.getElementById(id);
+  $("bSum").textContent = BK.title;
+  $("bList").innerHTML = BK.items.map(t => `<li>${t}</li>`).join("");
+  let snap = null;
+  try { snap = JSON.parse(localStorage.getItem(KEY + "-snap") || "null"); } catch(e) {}
+  const box = $("snapBox");
+  if (!snap) { box.textContent = BK.snapNone; return; }
+  box.innerHTML = `<span>${BK.snap}${snap.at}</span><button id="snapBtn">${BK.snapBtn}</button>`;
+  $("snapBtn").addEventListener("click", () => {
+    if (!confirm(BK.snapConfirm)) return;
+    try { localStorage.setItem(KEY, snap.data); } catch(e) {}
+    location.reload();
+  });
 })();
 
 // ---- Japanese public holidays (auto) ----
@@ -369,7 +444,7 @@ function changePeriod(){
   const reset = () => { startIn.value = P().start; endIn.value = P().end; };
   if (!s || !e) return reset();
   if (s > e) { alert("start は end より前の日付にしてください。"); return reset(); }
-  if (s < CFG.dateMin || e > CFG.dateMax) { alert("日付は 2026/1/1〜2035/12/31 の範囲で選んでください。"); return reset(); }
+  if (s < CFG.dateMin || e > CFG.dateMax) { alert("日付は 2026/9/1〜2027/11/30 の範囲で選んでください。"); return reset(); }
   if (dayDiff(s,e) + 1 > CFG.maxDays) { alert("期間は最大185日までです。"); return reset(); }
   P().start = s; P().end = e; clampTarget(true); save(); buildRows(); refresh(); jumpToday();
 }
@@ -541,7 +616,7 @@ fileIn.addEventListener("change", async () => {
   try {
     const s = JSON.parse(await f.text());
     if (!s || typeof s.entries !== "object") throw new Error();
-    if (!confirm("バックアップの内容で今の記録を置き換えます。よろしいですか？")) return;
+    if (!confirm("バックアップの内容で、今の記録と設定をすべて置き換えます。バックアップを取った日より後に入力した記録は消えます。必要な場合は「キャンセル」を押して、先に今の状態をバックアップしてください。復元してよろしいですか？")) return;
     state = periodize(upgrade(s));
     save(); syncInputs(); buildRows(); refresh(); jumpToday(); alert("復元しました。");
   } catch(e) { alert("このファイルは読み込めません。バックアップで保存した .json ファイルを選んでください。"); }
@@ -580,7 +655,7 @@ document.getElementById("addPeriod").addEventListener("click", () => {
   if (state.periods.length >= CFG.maxPeriods) { alert(PL.max); return; }
   const last = state.periods.reduce((a,p) => p.end > a.end ? p : a);
   const s = parse(last.end); s.setDate(s.getDate() + 1);
-  if (iso(s) > CFG.dateMax) { alert("2035/12/31 より後の期間は追加できません。"); return; }
+  if (iso(s) > CFG.dateMax) { alert("2027/11/30 より後の期間は追加できません。"); return; }
   const e = new Date(s); e.setDate(e.getDate() + Math.min(CFG.maxDays - 1, Math.max(0, dayDiff(last.start, last.end))));
   const end = iso(e) > CFG.dateMax ? CFG.dateMax : iso(e);
   const np = newPeriod({ start: iso(s), end, target: P().target, plan: {...P().plan} });
