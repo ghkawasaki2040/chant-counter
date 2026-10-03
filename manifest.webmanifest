@@ -1,6 +1,6 @@
 {
-  "name": "chant time",
-  "short_name": "chant time",
+  "name": "chant counter",
+  "short_name": "chant counter",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

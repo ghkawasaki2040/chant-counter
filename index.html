@@ -8,93 +8,127 @@
 <meta name="theme-color" content="#141A22" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="chant time">
+<meta name="apple-mobile-web-app-title" content="chant counter">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<title>chant time</title>
+<title>chant counter</title>
 <style>
 :root{
   box-sizing:border-box;
+  --c-blue:#1F6FC5; --tcolor:#1F4E6B; --goal:#1F6FC5; --c-yellow:#D4A21A; --c-red:#C62828;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
   --paper:#EEF1F4; --sheet:#FFFFFF; --ink:#1D2A3A; --sub:#5F6B7A; --rule:#D5DBE2;
-  --done:#1F6FC5; --done-soft:#E3EEFB; --now:#FFF6DA; --minus:#C62828; --plus:#1F6FC5;
-  --sat:#2D5EA8; --sun:#B03A3A;
+  --fill:#1F6F78; --fill-soft:#D6E9EA; --pace:#B7862B; --sat:#2D5EA8; --sun:#B03A3A; --empty:#E3E6EA;
+  --bg-low:#E4E6E9; --bg-b:#D2E3FA; --bg-y:#FBEEBE; --bg-r:#F8D2D0;
 }
 @media (prefers-color-scheme:dark){:root{
   --paper:#141A22; --sheet:#1C242F; --ink:#E6EBF1; --sub:#9AA6B4; --rule:#2C3643;
-  --done:#5EA2EE; --done-soft:#1D3450; --now:#3A3420; --minus:#F08A8A; --plus:#7FB2F0;
-  --sat:#86A9E6; --sun:#EB8C8C;}}
+  --fill:#5DB7BF; --fill-soft:#1E3A3E; --pace:#E0B45C; --sat:#86A9E6; --sun:#EB8C8C; --empty:#2A323D;
+  --bg-low:#2E333A; --bg-b:#1E3A5F; --bg-y:#4A3E14; --bg-r:#5A2222; --goal:#7FB2F0; --tcolor:#6FA9C9;}}
 *,*::before,*::after{box-sizing:inherit}
-html{-webkit-text-size-adjust:100%;touch-action:manipulation}
-button,select,.slot{touch-action:manipulation}
+html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--paper);color:var(--ink);
   font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
   font-size:15px;line-height:1.45}
 .num{font-variant-numeric:tabular-nums}
-.wrap{max-width:520px;margin:0 auto;padding:0 12px calc(16px + env(safe-area-inset-bottom,0px))}
-/* 上部（固定） */
-.head{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);padding:8px 0 8px}
-.card{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;overflow:hidden}
-.date{display:flex;align-items:center;justify-content:space-between;padding:6px 6px;border-bottom:1px solid var(--rule)}
-.date h1{margin:0;font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-weight:600;font-size:22px;
-  letter-spacing:.02em;text-align:center;flex:1}
-.date h1 small{font-size:16px;margin-left:6px}
-.date .w5{color:var(--sat)} .date .w6{color:var(--sun)}
-.nav{border:0;background:transparent;color:var(--ink);font-size:20px;width:44px;height:40px;border-radius:8px}
-.nav:active{background:var(--paper)}
-.sum{display:grid;grid-template-columns:4.6em 3.4em 2.4em 1fr auto;align-items:center;gap:0 6px;padding:6px 12px}
-.sum > *{padding:3px 0}
-.sum .lb{font-weight:700}
-.sum .done-row{color:var(--done);font-weight:700}
-.sum .urow{grid-column:1 / -1;display:flex;align-items:center;gap:6px}
-.sum .urow .lb{margin-right:2px;white-space:nowrap}
-.sum .chants{margin-left:auto;text-align:right;font-weight:700;font-size:13px;color:var(--done);white-space:nowrap}
-.sum .chants small{font-weight:500;font-size:12px;color:var(--sub)}
-.sum .gv{font-size:17px;font-weight:700;text-align:center}
-.sum select{font:inherit;font-size:16px;font-weight:700;color:var(--ink);background:var(--paper);
-  border:1px solid var(--rule);border-radius:6px;padding:2px 4px;text-align:center;text-align-last:center;
-  -webkit-appearance:none;appearance:none;width:3.4em}
-.sum .val{font-size:17px;font-weight:700;text-align:center}
-.sum .min{text-align:center;color:var(--sub)}
-.sum .min.done-row{color:var(--done)}
-.sum .diff{font-weight:700;min-width:3.2em;text-align:right;white-space:nowrap}
-.diff.minus{color:var(--minus)} .diff.plus{color:var(--plus)} .diff.zero{color:var(--sub)}
-.bar{height:6px;background:var(--rule)}
-.bar i{display:block;height:100%;width:0;background:var(--done);transition:width .3s}
-/* 時間の一覧 */
-.list{list-style:none;margin:0;padding:0}
-.hdr{display:grid;grid-template-columns:1fr 1.2em 1fr 76px 64px;font-size:12px;color:var(--sub);padding:6px 12px 4px;text-align:center;align-items:end}
-.hdr b{font-weight:700;color:var(--ink)} .hdr .ok{color:#A07800} .hdr .over{color:var(--minus)}
-.slot{display:grid;grid-template-columns:1fr 1.2em 1fr 76px 64px;align-items:stretch;text-align:center;
-  width:100%;min-height:44px;padding:0 12px;border-top:1px solid var(--rule);background:var(--sheet);font-size:16px}
-.slot > span{align-self:center}
-.cell{display:flex;align-items:center;justify-content:center;border:0;background:transparent;padding:0;margin:0;
-  cursor:pointer;-webkit-tap-highlight-color:transparent;font:inherit}
-.cell:active{background:var(--paper)}
-.slot.now{background:var(--now)}
-
-.slot .t{color:var(--sub)}
-.dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--sub);opacity:.6}
-.cell.on .dot{border:0;opacity:1}
-.cell.r.on .dot{background:radial-gradient(circle at 35% 30%,#8CC3FF,var(--done) 60%,#0F4C99)}
-.cell.t.on .dot{background:radial-gradient(circle at 35% 30%,#FFF3A6,#F2C300 60%,#B88A00)}
-.cell.part .dot{opacity:1;border-style:dashed}
-.cell.r.part .dot{border-color:var(--done)} .cell.t.part .dot{border-color:#D9A800}
-.cell:focus-visible{outline:2px solid var(--done);outline-offset:-2px}
-/* Target time（曜日ごとの目標）*/
-.plan-card{padding:8px 10px;margin-top:8px}
-.plan-h{font-size:12px;color:var(--sub)}
+.wrap{max-width:520px;margin:0 auto;padding:10px 12px calc(16px + env(safe-area-inset-bottom,0px))}
+h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-weight:600;
+  font-size:20px;letter-spacing:.04em;margin:2px 2px 6px}
+.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;padding:8px 12px;margin-bottom:8px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:6px 8px;margin:0}
+.facts div{display:flex;align-items:baseline;gap:4px;min-width:0}
+.facts .wide{grid-column:1/-1}
+.facts .dcell{flex-direction:column;align-items:stretch;gap:1px}
+.facts .dcell dt{font-size:12px}
+.facts dt{color:var(--sub);font-size:13px;white-space:nowrap}
+.facts dd{margin:0;font-weight:600}
+.facts input[type=date]{font:inherit;font-size:16px;font-weight:500;color:var(--ink);background:var(--paper);
+  border:1px solid var(--rule);border-radius:6px;padding:0 3px;min-height:28px;width:100%;min-width:0;letter-spacing:-.02em}
+.facts dd{flex:1;min-width:0;white-space:nowrap}
+.gauge-head b small{font-family:system-ui,-apple-system,sans-serif;font-size:14px}
+.target{display:flex;align-items:baseline;gap:2px}
+.target input{width:6.2em;text-align:left !important;font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:transparent;
+  border:0;border-bottom:1px dashed var(--rule);padding:0 2px;text-align:right}
+.period .prow{display:flex;gap:6px;align-items:center;margin-top:6px}
+.prow .ltog{border:0;background:transparent;padding:4px 0;color:var(--sub);margin-right:auto}
+.prow .ltog::before{content:"▶ ";font-size:10px}
+.prow .ltog[aria-expanded="true"]::before{content:"▼ "}
+#periodSel{width:100%;font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:var(--paper);
+  border:1px solid var(--rule);border-radius:8px;padding:5px 6px}
+.prow button{font:inherit;font-size:13px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);border-radius:16px;padding:5px 10px;white-space:nowrap}
+#periodList{margin-top:4px;max-height:50vh;overflow:auto}
+.pitem{display:block;width:100%;text-align:left;border:0;border-top:1px solid var(--rule);background:transparent;padding:6px 4px;font:inherit;color:var(--ink);cursor:pointer}
+.pitem.cur{background:var(--fill-soft)}
+.pitem .l1{display:block;font-size:14px;font-weight:600}
+.pitem .l2{display:block;font-size:12px;color:var(--sub)} .pitem .l2 b{color:var(--ink)}
+.tsel{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;white-space:nowrap}
+.tsel select{width:auto;min-width:7.6em;font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:2px 2px}
+.tsel input{width:6em;font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:transparent;border:0;border-bottom:1px dashed var(--rule);padding:0 2px}
+.tc-h{font-size:12px;color:var(--sub);margin-top:10px}
+.tc{display:grid;grid-template-columns:repeat(6,1fr);row-gap:2px;margin-top:2px;text-align:center}
+.tc span{font-size:12px;color:var(--sub);padding-top:2px}
+.tc b{font-size:16px;font-weight:600;padding-bottom:4px;border-bottom:1px solid var(--rule)}
+.tc b.z{color:var(--sub);font-weight:400}
+.plan-panel .plan-h{margin-top:0;padding-top:0;border-top:0}
+.plan-h{font-size:12px;color:var(--sub);margin-top:8px;padding-top:8px;border-top:1px solid var(--rule)}
 .plan{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin-top:2px}
-.plan label{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--sub)}
-.plan select{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;
-  padding:4px 0;width:100%;text-align:center;text-align-last:center;-webkit-appearance:none;appearance:none}
-.plan label.today{color:var(--done);font-weight:700}
-.plan label.today select{border-color:var(--done)}
-/* ボタン：iPhone で位置がずれないよう、画面に固定せず時間割のすぐ上に置く */
-.foot{display:flex;gap:8px;justify-content:center;margin:0 0 8px}
-.foot button{font:inherit;font-size:14px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:18px;padding:6px 14px}
-.foot button.main{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:600}
+.plan .ph{font-size:11px;line-height:1.2;color:var(--sub);text-align:center;padding-bottom:6px}
+.plan label{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--sub);white-space:nowrap}
+.plan select{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:4px 0;width:100%;text-align:center;text-align-last:center;-webkit-appearance:none;appearance:none}
+/* 達成度グラフ */
+.gauge-head{display:flex;align-items:baseline;gap:8px}
+.gauge-sub{display:flex;flex-wrap:wrap;gap:0 14px;font-size:13px;color:var(--sub);margin-top:1px}
+.gauge-sub b{color:var(--ink);font-weight:600}
+.goal{font-size:14px;font-weight:600;color:var(--goal);margin-top:2px}
+.gauge-head b small{font-size:14px;font-weight:600}
+.gauge-head b span{font-size:inherit;color:inherit}
+.gauge-head em{font-style:normal;font-size:14px;font-weight:600;color:var(--goal)}
+.gauge-head #pct{margin-left:auto;font-size:18px;font-weight:700;color:var(--ink)}
+.gauge-head b{font-size:22px;font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-weight:600}
+.gauge-head span{font-size:13px;color:var(--sub)}
+.bars{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:4px 8px;margin:6px 0 0}
+.bars .scale{display:flex;justify-content:space-between;margin-top:-2px}
+.bl{font-size:11px;color:var(--sub);white-space:nowrap}
+.track{position:relative;display:flex;gap:0;height:18px}
+.tbar{height:14px}
+.tbar div{position:relative;height:100%;background:var(--empty);border-radius:3px;overflow:hidden}
+.tbar i{position:absolute;inset:0 auto 0 0;width:0;background:var(--tcolor);border-radius:3px;transition:width .5s ease-out}
+.seg{position:relative;height:100%;background:var(--empty);overflow:hidden}
+.seg.s1{border-radius:3px 0 0 3px} .seg.s4{border-radius:0 3px 3px 0}
+.seg i{position:absolute;inset:0 auto 0 0;width:0;transition:width .5s ease-out}
+.seg.s1 i{background:var(--c-blue)} .seg.s2 i{background:var(--c-yellow)} .seg.s3 i{background:var(--c-red)}
+.seg.s4 i{background:linear-gradient(135deg,#F4DC8A,#C99A2E 55%,#E9C865)}
+.seg b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;
+  text-shadow:0 0 2px rgba(120,80,0,.8);opacity:0;transition:opacity .4s}
+.seg.done b{opacity:1}
+.scale{display:flex;justify-content:space-between;font-size:12px;color:var(--sub)}
+.pace{font-size:12px;color:var(--sub)}
+/* 表 */
+.tablebox{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;overflow:clip}
+table{width:100%;border-collapse:collapse;background:var(--sheet)}
+thead th{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--sheet);font-size:12px;font-weight:500;color:var(--sub);
+  text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)}
+thead th:first-child{text-align:left}
+/* iPhone の画面上部（時計・電池の表示の下）に、スクロールした表の一部が透けて見えないようにする */
+body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:var(--paper);z-index:20}
+td{padding:2px 8px;border-bottom:1px solid var(--rule);text-align:right;height:34px}
+td:first-child{text-align:left;white-space:nowrap}
+tr.today td{background:var(--fill-soft)}
+tr.month td{height:auto;padding:4px 8px;font-size:13px;text-align:left;font-weight:600;border-bottom:1px solid var(--rule);background:var(--paper)}
+.dw{font-size:12px;color:var(--sub);margin-left:3px}
+.w5 .dw{color:var(--sat)} .w6 .dw,.hol .dw{color:var(--sun)}
+td select{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--rule);
+  border-radius:6px;padding:1px 2px;width:4.6em;text-align:right}
+td select.empty{color:var(--sub)}
+.tot{color:var(--sub)}
+td.tot.low{background:var(--bg-low)} td.tot.ob{background:var(--bg-b);color:var(--ink)}
+td.tot.oy{background:var(--bg-y);color:var(--ink)} td.tot.or{background:var(--bg-r);color:var(--ink)}
+.mrow{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.legend{display:flex;gap:6px;font-size:11px;font-weight:400;color:var(--sub);white-space:nowrap}
+#dailyPace{margin-left:0}
+#dailyPace::before{display:none}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:3px;vertical-align:-1px;background:var(--sw)}
 /* 初回のパスワード入力画面 */
 .gate{position:fixed;inset:0;z-index:100;background:var(--paper);overflow:auto;-webkit-overflow-scrolling:touch;
   padding:calc(20px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px))}
@@ -113,8 +147,13 @@ body.locked{overflow:hidden}
 .notice{max-width:520px;margin:10px auto 0;font-size:12px;color:var(--sub)}
 .notice summary{cursor:pointer;text-align:center;color:#E07A10;font-weight:600}
 .notice ul{color:var(--sub);font-size:12px;margin-top:6px}
-.note{font-size:12px;color:var(--sub);text-align:center;margin:12px 0 0}
-@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--fill);outline-offset:2px}
+/* ボタン：iPhone で位置がずれないよう、画面に固定せず表のすぐ上に置く */
+.bar{display:flex;gap:8px;justify-content:center;margin:0 0 8px}
+.bar button{font:inherit;font-size:14px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:18px;padding:6px 14px}
+.bar button.main{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:600}
+.note{font-size:12px;color:var(--sub);text-align:center;margin-top:12px}
+@media (prefers-reduced-motion:reduce){.seg i,.seg b,.tbar i{transition:none}}
 </style>
 </head>
 <body>
@@ -124,84 +163,120 @@ body.locked{overflow:hidden}
   <button id="gBtn"></button><p class="gerr" id="gErr" role="alert"></p>
 </div></div>
 <div class="wrap">
-  <div class="card plan-card">
-    <div class="plan-h">Target time</div>
-    <div class="plan" id="plan"></div>
-  </div>
-  <div class="head">
-    <div class="card">
-      <div class="date">
-        <button class="nav" id="prev" aria-label="前の日">◀</button>
-        <h1 class="num" id="dateTitle"></h1>
-        <button class="nav" id="next" aria-label="次の日">▶</button>
-      </div>
-      <div class="sum num">
-        <span class="lb">目標</span>
-        <span class="gv" id="goalH"></span>
-        <span>時間</span>
-        <span class="min" id="goalMin"></span>
-        <span></span>
-        <span class="lb done-row">達成</span>
-        <span class="val done-row" id="doneH"></span>
-        <span class="done-row">時間</span>
-        <span class="min done-row" id="doneMin"></span>
-        <span class="diff" id="diff"></span>
-        <div class="urow"><span class="lb">時間単位</span><select id="unit" aria-label="時間単位"></select><span>分</span>
-        <span class="chants" id="chants"></span></div>
-      </div>
-      <div class="bar"><i id="barFill"></i></div>
-    </div>
-  </div>
+  <h1>chant counter</h1>
 
-  <div class="foot">
+  <section class="panel period">
+    <select id="periodSel" aria-label="期間の選択"></select>
+    <div class="prow"><button id="plistToggle" class="ltog" aria-expanded="false"><span id="plistSummary"></span></button>
+      <button id="addPeriod">＋新しい期間</button><button id="delPeriod" aria-label="この期間を削除">削除</button></div>
+    <div id="periodList" hidden></div>
+  </section>
+
+  <section class="panel">
+    <dl class="facts num">
+      <div class="dcell"><dt>start</dt><dd><input id="start" type="date" min="2026-01-01" max="2035-12-31" aria-label="開始日"></dd></div>
+      <div class="dcell"><dt>end</dt><dd><input id="end" type="date" min="2026-01-01" max="2035-12-31" aria-label="終了日"></dd></div>
+      <div><dt>total days</dt><dd id="totalDays"></dd></div>
+      <div><dt>countdown</dt><dd id="countdown"></dd></div>
+      <div class="wide"><dt>target</dt><dd class="target tsel"><select id="targetSel" aria-label="目標回数"></select> chants</dd></div>
+    </dl>
+  </section>
+
+  <section class="panel" aria-label="達成度">
+    <div class="gauge-head num"><b><small>現在：</small><span id="current">0</span></b><span id="pct">–</span></div>
+    <div class="gauge-sub num"><span>今日までの目標：<b id="progTarget">0</b></span><span>1日の目標：<b id="daily">0</b></span></div>
+    <div class="goal num" id="todayGoal"></div>
+    <div class="bars">
+    <span class="bl">実際の進捗</span>
+    <div class="track" id="track">
+      <div class="seg s1" style="flex:30"><i></i></div><div class="seg s2" style="flex:30"><i></i></div>
+      <div class="seg s3" style="flex:30"><i></i></div><div class="seg s4" style="flex:10"><i></i><b>★</b></div>
+      </div>
+    <span class="bl">目標の進捗</span>
+    <div class="tbar"><div><i id="tfill"></i></div></div>
+    <span></span>
+    <div><div class="scale num"><span>0</span><span></span><span id="scaleMax"></span></div></div>
+    </div>
+  </section>
+
+  <section class="panel plan-panel">
+    <div class="plan-h">目標時間</div>
+    <div class="plan" id="plan"></div>
+    <div class="tc-h">1day.time count</div>
+    <div class="tc num" id="tcount" aria-label="1日の時間ごとの日数"></div>
+  </section>
+
+  <div class="bar">
   <button class="main" id="todayBtn">今日</button>
   <button id="exportBtn">バックアップ</button>
   <button id="importBtn">復元</button>
   <button id="reloadBtn" aria-label="更新">⟳</button>
   <input id="importFile" type="file" accept="application/json,.json" hidden>
   </div>
-  <div class="card">
-    <div class="hdr num"><span>start</span><span></span><span>end</span><span id="tHdr">target</span><span>real</span></div>
-    <div class="list" id="list"></div>
+  <div class="tablebox">
+  <table class="num">
+    <thead><tr><th>calendar</th><th>time</th><th>count</th><th>total</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
   </div>
-  <p class="note">target をタップすると 🟡（予定）、real をタップすると 🔵（実施）になり、もう一度タップで ○ に戻ります。記録はこのスマホの中に保存されます。</p>
+  <p class="note">記録はこのスマホの中に保存されます。機種変更の前に「バックアップ」で保存してください。</p>
   <details class="notice"><summary id="nSum"></summary><ul id="nList"></ul></details>
 </div>
 
 
 <script>
-const CFG = {"perHour": 3400, "codes": [{"hash": "7a7fc9b3", "until": "2026-10-31"}], "dayStart": 300, "dayEnd": 1440, "units": [10, 15, 20, 30, 60], "unit": 20, "plan": {"mon": 1, "tue": 1, "wed": 1, "thu": 1, "fri": 1, "sat": 1, "sun": 1, "hol": 1}, "hours": [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 11, 12]};
-const KEY = "chant-time-v1";
-const WD = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-const PLAN_ITEMS = [["mon","Mon"],["tue","Tue"],["wed","Wed"],["thu","Thu"],["fri","Fri"],["sat","Sat"],["sun","Sun"],["hol","Hol"]];
-const B = 5;   // 記録は5分刻みで保存（単位を変えても記録が残るように）
+const CFG = {"start": "2026-10-01", "end": "2026-12-31", "target": 100000, "perHour": 3400, "plan": {"mon": 1, "tue": 1, "wed": 1, "thu": 1, "fri": 1, "sat": 1, "sun": 1, "hol": 1}, "hours": [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "targets": [100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1500000, 2000000, 3000000], "targetMax": 5000000, "dailyMax": 50000, "maxDays": 185, "maxPeriods": 120, "dateMin": "2026-01-01", "dateMax": "2035-12-31", "codes": [{"hash": "7a7fc9b3", "until": "2026-10-31"}], "times": [{"m": 20, "label": "20m", "count": 1150}, {"m": 30, "label": "30m", "count": 1700}, {"m": 40, "label": "40m", "count": 2300}, {"m": 60, "label": "1h", "count": 3400}, {"m": 90, "label": "1.5h", "count": 5100}, {"m": 120, "label": "2h", "count": 6800}, {"m": 150, "label": "2.5h", "count": 8500}, {"m": 180, "label": "3h", "count": 10200}, {"m": 210, "label": "3.5h", "count": 11900}, {"m": 240, "label": "4h", "count": 13600}, {"m": 270, "label": "4.5h", "count": 15300}, {"m": 300, "label": "5h", "count": 17000}, {"m": 330, "label": "5.5h", "count": 18700}, {"m": 360, "label": "6h", "count": 20400}, {"m": 390, "label": "6.5h", "count": 22100}, {"m": 420, "label": "7h", "count": 23800}, {"m": 450, "label": "7.5h", "count": 25500}, {"m": 480, "label": "8h", "count": 27200}, {"m": 510, "label": "8.5h", "count": 28900}, {"m": 540, "label": "9h", "count": 30600}, {"m": 570, "label": "9.5h", "count": 32300}, {"m": 600, "label": "10h", "count": 34000}, {"m": 660, "label": "11h", "count": 37400}, {"m": 720, "label": "12h", "count": 40800}]};
+const KEY = "chant-counter-v1";
+const WD = ["月","火","水","木","金","土","日"];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const PLAN_ITEMS = [["mon","月"],["tue","火"],["wed","水"],["thu","木"],["fri","金"],["sat","土"],["sun","日"],["hol","祝"]];
+const fmt = n => Math.round(n).toLocaleString("ja-JP");
+const hTxt = h => String(h).replace(/\.0$/,"") + "h";
 
-// ---- 保存 ----
-// days: { "2026-10-01": { t:[5分ブロックの開始分...], r:[...] } }
-let state = { days:{}, plan:{...CFG.plan}, unit: CFG.unit };
-try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) state = { ...state, ...s, plan:{...CFG.plan, ...(s.plan||{})} }; } catch(e) {}
-function migrate(st){              // 旧版（20分ごとの on）からの変換
-  Object.entries(st.days || {}).forEach(([k,d]) => {
-    if (d && Array.isArray(d.on)) {
-      const r = []; d.on.forEach(m => { for (let x = m; x < m + 20; x += B) r.push(x); });
-      st.days[k] = { t: d.t || [], r };
-    }
-  });
-  delete st.goal; return st;
+// ---- storage ----
+// 期間（最大99回分）ごとに start・end・target・目標時間を保存。記録（entries）は日付ごとに共通。
+const newPeriod = (o = {}) => ({ start: o.start || CFG.start, end: o.end || CFG.end,
+  target: o.target || CFG.target, plan: {...CFG.plan, ...(o.plan || {})} });
+function upgrade(s){
+  const vals = Object.values(s.entries || {});
+  // 「時間」で保存していた旧版だけを分に変換（値がすべて12以下なら時間とみなす）
+  if (s.unit !== "m" && vals.length && vals.every(v => v <= 12)) {
+    const e = {}; Object.entries(s.entries).forEach(([k,v]) => e[k] = Math.round(v*60)); s.entries = e;
+  }
+  s.unit = "m";
+  // 誤って60倍になった記録を元に戻す（12h = 720分を超える値は60倍の誤り）
+  Object.entries(s.entries || {}).forEach(([k,v]) => { if (v > 720 && v % 60 === 0) s.entries[k] = v / 60; });
+  if (!s.target && s.targetMan) s.target = s.targetMan * 10000;
+  delete s.targetMan;
+  if (s.plan && s.plan.weh != null) { s.plan.sat = s.plan.sun = s.plan.hol = s.plan.weh; delete s.plan.weh; }
+  return s;
 }
-state = migrate(state);
+function periodize(s){
+  if (!Array.isArray(s.periods) || !s.periods.length) { s.periods = [newPeriod(s)]; s.cur = 0; }
+  const periods = s.periods.slice(0, CFG.maxPeriods).map(p => newPeriod(p));
+  let cur = Number(s.cur); if (!(cur >= 0 && cur < periods.length)) cur = periods.length - 1;
+  return { unit:"m", entries: s.entries || {}, periods, cur };
+}
+let state = { unit:"m", entries:{}, periods:[newPeriod()], cur:0 };
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) state = periodize(upgrade(s)); } catch(e) {}
+const P = () => state.periods[state.cur];
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){ alert("保存できませんでした。プライベートブラウズを解除してください。"); } }
 // iPhone：プルダウン（ドラム）を閉じた後に画面のずれを元に戻す
 document.addEventListener("focusout", e => {
   if (e.target.matches && e.target.matches("select, input")) setTimeout(() => window.scrollTo(window.scrollX, window.scrollY), 50);
 });
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+const TIME = {}; CFG.times.forEach(t => TIME[t.m] = t);
+const countOf = m => TIME[m] ? TIME[m].count : Math.round(m/60*CFG.perHour);
 
-// ---- 日付 ----
+// ---- dates ----
 const pad = n => String(n).padStart(2,"0");
 const iso = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 const parse = s => new Date(Number(s.slice(0,4)), Number(s.slice(5,7))-1, Number(s.slice(8,10)));
-const todayISO = () => iso(new Date());
+let todayISO = iso(new Date());          // 日付が変わったら更新する
+const md = s => Number(s.slice(5,7))+"/"+Number(s.slice(8));
+const dayDiff = (a,b) => Math.round((parse(b) - parse(a))/86400000);
+const wdMon = d => (d.getDay()+6)%7;
 const GATE = {
   title: "ご利用にあたって",
   items: [
@@ -255,11 +330,8 @@ const GATE = {
   $("gBtn").addEventListener("click", tryPass);
   $("gPass").addEventListener("keydown", e => { if (e.key === "Enter") tryPass(); });
 })();
-let cur = todayISO();
-const day = () => state.days[cur] || { t:[], r:[] };
-const hm = m => (m % 1440 === 0 && m > 0 ? 0 : Math.floor(m/60)) + ":" + pad(m % 60);
 
-// ---- 日本の祝日（自動計算）----
+// ---- Japanese public holidays (auto) ----
 const holCache = {};
 function holidaysOf(y){
   if (holCache[y]) return holCache[y];
@@ -279,99 +351,181 @@ function holidaysOf(y){
   return holCache[y] = h;
 }
 const isHoliday = s => !!holidaysOf(Number(s.slice(0,4)))[s];
-const planKeyOf = s => isHoliday(s) ? "hol" : ["mon","tue","wed","thu","fri","sat","sun"][(parse(s).getDay()+6)%7];
 
-// ---- Target time（曜日ごと）----
+// ---- days in period ----
+let DAYS = [];
+function makeDays(){
+  DAYS = [];
+  const d = parse(P().start), e = parse(P().end);
+  while (d <= e) { const s = iso(d); DAYS.push([s, wdMon(d), isHoliday(s)]); d.setDate(d.getDate()+1); }
+}
+const planKey = d => d[2] ? "hol" : ["mon","tue","wed","thu","fri","sat","sun"][d[1]];
+
+// ---- top settings ----
+const startIn = document.getElementById("start"), endIn = document.getElementById("end");
+startIn.value = P().start; endIn.value = P().end;
+function changePeriod(){
+  const s = startIn.value, e = endIn.value;
+  const reset = () => { startIn.value = P().start; endIn.value = P().end; };
+  if (!s || !e) return reset();
+  if (s > e) { alert("start は end より前の日付にしてください。"); return reset(); }
+  if (s < CFG.dateMin || e > CFG.dateMax) { alert("日付は 2026/1/1〜2035/12/31 の範囲で選んでください。"); return reset(); }
+  if (dayDiff(s,e) + 1 > CFG.maxDays) { alert("期間は最大185日までです。"); return reset(); }
+  P().start = s; P().end = e; clampTarget(true); save(); buildRows(); refresh(); jumpToday();
+}
+startIn.addEventListener("change", changePeriod);
+endIn.addEventListener("change", changePeriod);
+
+// ---- target（プルダウン＋手入力、上限 = min(50,000 × 日数, 5,000,000)）----
+const TMSG = { max: m => "target の上限は " + m + " です（1日あたり50,000 × 期間の日数、最大5,000,000）。", clamp: m => "期間の長さに合わせて、target を上限の " + m + " に変更しました。", prompt: m => "target を入力してください（上限 " + m + "）" };
+const tSel = document.getElementById("targetSel");
+const periodDays = () => dayDiff(P().start, P().end) + 1;
+const targetMax = () => Math.min(CFG.targetMax, CFG.dailyMax * periodDays());
+function showTarget(){
+  const max = targetMax(), t = P().target;
+  const list = CFG.targets.includes(t) ? CFG.targets : [...CFG.targets, t].sort((a,b) => a - b);
+  tSel.innerHTML = list.map(v => `<option value="${v}" ${v > max ? "disabled" : ""}>${fmt(v)}</option>`).join("") +
+    `<option value="other">手入力…</option>`;
+  tSel.value = String(t);
+}
+function clampTarget(notify){
+  const max = targetMax();
+  if (P().target > max) { P().target = max; if (notify) alert(TMSG.clamp(fmt(max))); }
+}
+tSel.addEventListener("change", () => {
+  if (tSel.value === "other") {
+    const max = targetMax();
+    const ans = prompt(TMSG.prompt(fmt(max)), String(P().target));
+    const v = ans == null ? 0 : Number(String(ans).replace(/[^0-9]/g, ""));
+    if (v > 0) {
+      if (v > max) alert(TMSG.max(fmt(max)));
+      P().target = Math.min(v, max); save(); refresh();
+    }
+    showTarget(); return;
+  }
+  P().target = Number(tSel.value); save(); showTarget(); refresh();
+});
+clampTarget(false);
+showTarget();
+
 document.getElementById("plan").innerHTML = PLAN_ITEMS.map(([k,l]) =>
-  `<label data-k="${k}">${l}<select data-plan="${k}" aria-label="${l} の目標時間">${CFG.hours.map(h=>`<option value="${h}">${String(h).replace(/\.0$/,"")}h</option>`).join("")}</select></label>`).join("");
-document.querySelectorAll("select[data-plan]").forEach(sel => {
-  sel.value = String(state.plan[sel.dataset.plan]);
-  sel.addEventListener("change", () => { state.plan[sel.dataset.plan] = Number(sel.value); save(); render(); });
+  `<label>${l}<select data-plan="${k}" aria-label="${l}の目標時間">${CFG.hours.map(h=>`<option value="${h}">${hTxt(h)}</option>`).join("")}</select></label>`).join("");
+const fitPlan = h => CFG.hours.includes(h) ? h : CFG.hours.find(x => x >= h) || CFG.hours[CFG.hours.length-1];
+state.periods.forEach(p => Object.keys(p.plan).forEach(k => p.plan[k] = fitPlan(Number(p.plan[k]))));
+document.querySelectorAll("select[data-plan]").forEach(s => {
+  s.value = String(P().plan[s.dataset.plan]);
+  s.addEventListener("change", () => { P().plan[s.dataset.plan] = Number(s.value); save(); refresh(); });
 });
-
-// ---- 時間単位 ----
-const unitSel = document.getElementById("unit");
-unitSel.innerHTML = CFG.units.map(u => `<option value="${u}">${u}</option>`).join("");
-unitSel.value = String(state.unit);
-unitSel.addEventListener("change", () => { state.unit = Number(unitSel.value); save(); buildList(); render(); });
-
-// ---- 時間割 ----
-let SLOTS = [];
-function buildList(){
-  const u = state.unit; SLOTS = [];
-  for (let m = CFG.dayStart; m < CFG.dayEnd; m += u) SLOTS.push(m);
-  document.getElementById("list").innerHTML = SLOTS.map(m =>
-    `<div class="slot num" data-m="${m}"><span>${hm(m)}</span><span class="t">~</span><span>${hm(Math.min(m+u, CFG.dayEnd))}</span>`+
-    `<button class="cell t" data-k="t" data-m="${m}" aria-label="${hm(m)} target"><span class="dot"></span></button>`+
-    `<button class="cell r" data-k="r" data-m="${m}" aria-label="${hm(m)} real"><span class="dot"></span></button></div>`).join("");
+function syncInputs(){
+  startIn.value = P().start; endIn.value = P().end; showTarget();
+  document.querySelectorAll("select[data-plan]").forEach(x => x.value = String(P().plan[x.dataset.plan]));
 }
-const blocksOf = m => { const a = []; for (let x = m; x < Math.min(m + state.unit, CFG.dayEnd); x += B) a.push(x); return a; };
 
-function render(){
-  const d = parse(cur), wd = (d.getDay()+6)%7, hol = isHoliday(cur);
-  document.getElementById("dateTitle").innerHTML =
-    `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())}<small class="${hol||wd===6?"w6":wd===5?"w5":""}">${WD[wd]}${hol?" Hol":""}</small>`;
-  const pk = planKeyOf(cur);
-  document.querySelectorAll(".plan label").forEach(l => l.classList.toggle("today", l.dataset.k === pk));
-  const goalH = state.plan[pk], goalMin = Math.round(goalH * 60);
-  const dd = day(), T = new Set(dd.t), Rr = new Set(dd.r);
-  const doneMin = Rr.size * B;
-  const diff = doneMin - goalMin;
-  document.getElementById("goalH").textContent = goalH.toFixed(1);
-  document.getElementById("goalMin").textContent = "（" + goalMin + "）";
-  document.getElementById("doneH").textContent = (doneMin/60).toFixed(1);
-  document.getElementById("doneMin").textContent = "（" + doneMin + "）";
-  const df = document.getElementById("diff");
-  df.textContent = diff < 0 ? "あと" + (-diff) + "分" : diff > 0 ? "+" + diff + "分" : "達成";
-  df.className = "diff " + (diff < 0 ? "minus" : diff > 0 ? "plus" : "zero");
-  // 実施時間 × 3,400回/1時間
-  document.getElementById("chants").innerHTML =
-    `<small>${cur === todayISO() ? "本日" : "この日"}：</small>${Math.round(doneMin/60*CFG.perHour).toLocaleString("ja-JP")} chants ${(doneMin/60).toFixed(1).replace(/\.0$/,"")}h`;
-  document.getElementById("barFill").style.width = Math.min(100, goalMin ? doneMin/goalMin*100 : 0) + "%";
-
-  // target の個数：目標時間 ÷ 時間単位
-  const need = Math.ceil(goalMin / state.unit);
-  let picked = 0;
-  const now = new Date(), nowM = now.getHours()*60 + now.getMinutes(), isToday = cur === todayISO();
-  document.querySelectorAll(".slot").forEach(row => {
-    const m = Number(row.dataset.m), bl = blocksOf(m);
-    [["t",T],["r",Rr]].forEach(([k,set]) => {
-      const c = row.querySelector(".cell."+k), n = bl.filter(x => set.has(x)).length;
-      c.classList.toggle("on", n === bl.length); c.classList.toggle("part", n > 0 && n < bl.length);
-      c.setAttribute("aria-pressed", n === bl.length);
-      if (k === "t" && n === bl.length) picked++;
-    });
-    row.classList.toggle("now", isToday && nowM >= m && nowM < m + state.unit);
+// ---- table ----
+// 累計（total）の色分けの説明：各月の見出しの右側に表示
+const LEGEND = `<span class="legend"><span style="--sw:var(--bg-low)">30%−</span><span style="--sw:var(--bg-b)">10%+</span><span style="--sw:var(--bg-y)">20%+</span><span style="--sw:var(--bg-r)">30%+</span></span>`;
+const timeOpts = '<option value="">—</option>' + CFG.times.map(t => `<option value="${t.m}">${t.label}</option>`).join("");
+function buildRows(){
+  makeDays();
+  let html = "", lastMonth = "";
+  DAYS.forEach(([date, wd, hol]) => {
+    const mk = date.slice(0,7);
+    if (mk !== lastMonth){ lastMonth = mk; html += `<tr class="month"><td colspan="4"><div class="mrow"><span>${Number(mk.slice(0,4))}年${Number(mk.slice(5))}月</span>${LEGEND}</div></td></tr>`; }
+    const cls = hol ? "hol" : wd===5 ? "w5" : wd===6 ? "w6" : "";
+    html += `<tr id="r${date}" class="${date===todayISO?"today":""}">
+      <td class="${cls}">${md(date)}<span class="dw">${WD[wd]}${hol?"祝":""}</span></td>
+      <td><select data-date="${date}" aria-label="${md(date)}の時間">${timeOpts}</select></td>
+      <td id="c${date}"></td><td class="tot" id="t${date}"></td></tr>`;
   });
-  const th = document.getElementById("tHdr");
-  th.innerHTML = `target:<b>${need}</b><br><span class="${picked===need?"ok":picked>need?"over":""}">${picked}/${need}</span>`;
+  document.getElementById("rows").innerHTML = html;
 }
 
-// ---- 操作 ----
-document.getElementById("list").addEventListener("click", e => {
-  const c = e.target.closest(".cell"); if (!c) return;
-  const k = c.dataset.k, bl = blocksOf(Number(c.dataset.m));
-  const dd = day(), set = new Set(dd[k]);
-  const allOn = bl.every(x => set.has(x));
-  bl.forEach(x => allOn ? set.delete(x) : set.add(x));
-  state.days[cur] = { t: dd.t, r: dd.r, [k]: [...set].sort((a,b)=>a-b) };
-  save(); render();
+// ---- calculation ----
+function refresh(){
+  const totalDays = DAYS.length;
+  const daily = P().target / Math.max(1, totalDays);           // e.g. 1,000,000 / 94 days
+  let total = 0, current = 0;
+  DAYS.forEach((d, i) => {
+    const date = d[0], m = state.entries[date] || 0, c = m ? countOf(m) : 0;
+    total += c; if (date <= todayISO) current = total;
+    const sel = document.querySelector(`select[data-date="${date}"]`);
+    sel.value = m ? String(m) : ""; sel.classList.toggle("empty", !m);
+    document.getElementById("c"+date).textContent = m ? fmt(c) : "";
+    const tc = document.getElementById("t"+date);
+    tc.className = "tot";
+    if (date <= todayISO) {
+      tc.textContent = fmt(total);
+      const r = total / (daily * (i+1));
+      tc.classList.add(r < 0.7 ? "low" : r > 1.3 ? "or" : r > 1.2 ? "oy" : r > 1.1 ? "ob" : "x");
+    } else tc.textContent = "";
+  });
+  if (todayISO < P().start) current = 0;
+  const elapsed = Math.max(0, Math.min(totalDays, dayDiff(P().start, todayISO) + 1));
+  const prog = daily * elapsed;
+  document.getElementById("totalDays").textContent = totalDays;
+  document.getElementById("countdown").textContent = Math.max(0, dayDiff(todayISO, P().end)) + " day";
+  document.getElementById("current").textContent = fmt(current);
+  document.getElementById("progTarget").textContent = fmt(prog);
+  document.getElementById("daily").textContent = fmt(daily);
+  document.getElementById("pct").textContent = prog > 0 ? Math.round(current / prog * 100) + "%" : "–";
+  const td = [todayISO, wdMon(new Date()), isHoliday(todayISO)];
+  const th = P().plan[planKey(td)];
+  document.getElementById("todayGoal").textContent =
+    "今日の目標→" + (td[2] ? "祝" : WD[td[1]]) + " " + hTxt(th) + " " + fmt(th * CFG.perHour);
+  const pct = current / P().target * 100;
+  [[0,30],[30,60],[60,90],[90,100]].forEach(([a,b], k) => {
+    const seg = document.querySelectorAll("#track .seg")[k];
+    const w = Math.max(0, Math.min(1, (pct - a) / (b - a)));
+    seg.querySelector("i").style.width = (w*100) + "%";
+    seg.classList.toggle("done", w >= 1);
+  });
+  document.getElementById("tfill").style.width = Math.min(100, prog / P().target * 100) + "%";
+  document.getElementById("scaleMax").textContent = fmt(P().target);
+  // 1day.time count：0.5h・1h・1.5h・2h・3h…9h・10h~ に切り捨てで分類（30分未満は数えない）
+  const TCB = ["0.5h","1h","1.5h","2h","3h","4h","5h","6h","7h","8h","9h","10h~"];
+  const tc = Array(TCB.length).fill(0);
+  DAYS.forEach(d => {
+    const m = state.entries[d[0]] || 0;
+    if (m < 30) return;
+    const k = m < 60 ? 0 : m < 90 ? 1 : m < 120 ? 2 : m < 600 ? Math.floor(m / 60) + 1 : 11;
+    tc[k]++;
+  });
+  let tcHtml = "";
+  [[0,5],[6,11]].forEach(([a,b]) => {
+    for (let k = a; k <= b; k++) tcHtml += `<span>${TCB[k]}</span>`;
+    for (let k = a; k <= b; k++) tcHtml += `<b class="${tc[k] ? "" : "z"}">${tc[k]}</b>`;
+  });
+  document.getElementById("tcount").innerHTML = tcHtml;
+  renderPeriods();
+}
+document.getElementById("rows").addEventListener("change", e => {
+  const s = e.target.closest("select[data-date]"); if (!s) return;
+  if (s.value) state.entries[s.dataset.date] = Number(s.value); else delete state.entries[s.dataset.date];
+  save(); refresh();
 });
-function move(n){ const d = parse(cur); d.setDate(d.getDate()+n); cur = iso(d); render(); }
-document.getElementById("prev").addEventListener("click", () => move(-1));
-document.getElementById("next").addEventListener("click", () => move(1));
-function jumpNow(){
-  cur = todayISO(); render();
-  const el = document.querySelector(".slot.now") || document.querySelector(".slot");
-  const top = el.getBoundingClientRect().top + window.scrollY - document.querySelector(".head").offsetHeight - 60;
-  window.scrollTo({ top: Math.max(0, top) });
-}
-document.getElementById("todayBtn").addEventListener("click", jumpNow);
-setInterval(render, 60000);
 
-// ---- バックアップ／復元 ----
+// ---- jump to today ----
+function jumpToday(){
+  if (!DAYS.length) return;
+  const first = DAYS[0][0], last = DAYS[DAYS.length-1][0];
+  const t = todayISO < first ? first : todayISO > last ? last : todayISO;
+  // 今日の2日前の行が、表の見出しのすぐ下に来るように表示
+  const idx = DAYS.findIndex(d => d[0] === t);
+  const row = document.getElementById("r" + DAYS[Math.max(0, idx - 2)][0]);
+  if (!row) return;
+  const thead = document.querySelector("thead");
+  window.scrollTo({ top: Math.max(0, row.getBoundingClientRect().top + window.scrollY - thead.offsetHeight) });
+  // 見出しが画面上部に固定された位置を実測して、行の上端をぴったり合わせる（iPhone の上部の余白にも対応）
+  requestAnimationFrame(() => {
+    const gap = row.getBoundingClientRect().top - thead.querySelector("th").getBoundingClientRect().bottom;
+    if (Math.abs(gap) > 1) window.scrollBy(0, gap);
+  });
+}
+document.getElementById("todayBtn").addEventListener("click", jumpToday);
+
+// ---- backup / restore ----
 document.getElementById("exportBtn").addEventListener("click", async () => {
-  const name = "chant_time_backup_" + todayISO() + ".json";
+  const name = "chant_counter_backup_" + todayISO + ".json";
   const file = new File([JSON.stringify(state)], name, {type:"application/json"});
   if (navigator.canShare && navigator.canShare({files:[file]})) {
     try { await navigator.share({files:[file], title:name}); return; } catch(e) { if (e.name === "AbortError") return; }
@@ -386,19 +540,71 @@ fileIn.addEventListener("change", async () => {
   const f = fileIn.files[0]; if (!f) return;
   try {
     const s = JSON.parse(await f.text());
-    if (!s || typeof s.days !== "object") throw new Error();
+    if (!s || typeof s.entries !== "object") throw new Error();
     if (!confirm("バックアップの内容で今の記録を置き換えます。よろしいですか？")) return;
-    state = migrate({ days: s.days, plan: {...CFG.plan, ...(s.plan||{})}, unit: s.unit || CFG.unit });
-    save(); unitSel.value = String(state.unit);
-    document.querySelectorAll("select[data-plan]").forEach(x => x.value = String(state.plan[x.dataset.plan]));
-    buildList(); render(); alert("復元しました。");
-  } catch(e) { alert("このファイルは読み込めません。chant time のバックアップ（.json）を選んでください。"); }
+    state = periodize(upgrade(s));
+    save(); syncInputs(); buildRows(); refresh(); jumpToday(); alert("復元しました。");
+  } catch(e) { alert("このファイルは読み込めません。バックアップで保存した .json ファイルを選んでください。"); }
   fileIn.value = "";
 });
 
-buildList();
-render();
-requestAnimationFrame(jumpNow);
+// ---- 期間の切り替え・一覧 ----
+const PL = { no: n => n + "回目", goal: "目標:", list: "期間の一覧", max: "期間は120回分まで登録できます。", last: "期間が1つだけのときは削除できません。", delc: n => n + "回目の期間を削除します。記録（time の入力）は消えません。よろしいですか？" };
+const ymdS = s => Number(s.slice(0,4)) + "/" + Number(s.slice(5,7)) + "/" + Number(s.slice(8));
+function periodSum(p){
+  let t = 0;
+  Object.entries(state.entries).forEach(([d,m]) => { if (d >= p.start && d <= p.end && d <= todayISO) t += countOf(m); });
+  return t;
+}
+function renderPeriods(){
+  const sel = document.getElementById("periodSel");
+  sel.innerHTML = state.periods.map((p,i) => `<option value="${i}">${PL.no(i+1)} ${ymdS(p.start)}〜${ymdS(p.end)}</option>`).join("");
+  sel.value = String(state.cur);
+  document.getElementById("plistSummary").textContent = PL.list + "（" + state.periods.length + "）";
+  document.getElementById("periodList").innerHTML = state.periods.map((p,i) => {
+    const sum = periodSum(p), pc = p.target ? Math.round(sum / p.target * 100) : 0;
+    return `<button class="pitem ${i===state.cur?"cur":""}" data-i="${i}"><span class="l1 num">${PL.no(i+1)}　${ymdS(p.start)}〜${ymdS(p.end)}</span>`+
+           `<span class="l2 num">${PL.goal}${fmt(p.target)}　${fmt(sum)} chants　<b>${pc}%</b></span></button>`;
+  }).join("");
+}
+function switchPeriod(i){ state.cur = i; save(); syncInputs(); buildRows(); refresh(); jumpToday(); }
+document.getElementById("plistToggle").addEventListener("click", e => {
+  const list = document.getElementById("periodList"), open = list.hidden;
+  list.hidden = !open; e.currentTarget.setAttribute("aria-expanded", open);
+});
+document.getElementById("periodSel").addEventListener("change", e => switchPeriod(Number(e.target.value)));
+document.getElementById("periodList").addEventListener("click", e => {
+  const b = e.target.closest(".pitem"); if (b) { switchPeriod(Number(b.dataset.i)); window.scrollTo({top:0}); }
+});
+document.getElementById("addPeriod").addEventListener("click", () => {
+  if (state.periods.length >= CFG.maxPeriods) { alert(PL.max); return; }
+  const last = state.periods.reduce((a,p) => p.end > a.end ? p : a);
+  const s = parse(last.end); s.setDate(s.getDate() + 1);
+  if (iso(s) > CFG.dateMax) { alert("2035/12/31 より後の期間は追加できません。"); return; }
+  const e = new Date(s); e.setDate(e.getDate() + Math.min(CFG.maxDays - 1, Math.max(0, dayDiff(last.start, last.end))));
+  const end = iso(e) > CFG.dateMax ? CFG.dateMax : iso(e);
+  const np = newPeriod({ start: iso(s), end, target: P().target, plan: {...P().plan} });
+  np.target = Math.min(np.target, Math.min(CFG.targetMax, CFG.dailyMax * (dayDiff(np.start, np.end) + 1)));
+  state.periods.push(np);
+  switchPeriod(state.periods.length - 1);
+});
+document.getElementById("delPeriod").addEventListener("click", () => {
+  if (state.periods.length <= 1) { alert(PL.last); return; }
+  if (!confirm(PL.delc(state.cur + 1))) return;
+  state.periods.splice(state.cur, 1);
+  switchPeriod(Math.min(state.cur, state.periods.length - 1));
+});
+
+buildRows();
+refresh();
+requestAnimationFrame(jumpToday);
+// ---- 日付が変わったとき（アプリを開きっぱなし・待機から復帰）に今日を更新 ----
+function checkDay(){
+  const t = iso(new Date());
+  if (t !== todayISO) { todayISO = t; buildRows(); refresh(); jumpToday(); }
+}
+setInterval(checkDay, 60000);
+
 // ---- オフライン対応と自動アップデート ----
 let swReg = null;
 if ("serviceWorker" in navigator && location.protocol === "https:") {
@@ -409,14 +615,15 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
     if (hadController && !reloaded) { reloaded = true; location.reload(); }   // 新しい版に切り替わったら読み込み直す
   });
 }
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) return;
-  render();
-  if (swReg) swReg.update().catch(() => {});                                  // 新しい版がないか確認
-});
+// ---- 手動の更新ボタン（ホーム画面アプリは引っ張って更新ができないため）----
 document.getElementById("reloadBtn").addEventListener("click", async () => {
   try { if (swReg) await swReg.update(); } catch(e) {}
   location.reload();
+});
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) return;
+  checkDay();
+  if (swReg) swReg.update().catch(() => {});                                  // 新しい版がないか確認
 });
 </script>
 </body>
